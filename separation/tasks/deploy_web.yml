@@ -1,0 +1,16 @@
+    - name: Install and Congifure Web Server
+      ansible.builtin.pip:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - flask
+        - flask-mysql
+
+    - name: Copy source code
+      ansible.builtin.copy:
+        src: app.py
+        dest: /opt/app.py
+
+    # - name: Start Web Server
+    #   ansible.builtin.shell:
+    #     cmd: FLASK_APP=/opt/app.py nohup flask run --host=0.0.0.0   # nohup: To run command in the background

@@ -1,0 +1,5 @@
+[db_and_web_servers]
+db_and_web_server1 ansible_host=10.200.193.106 ansible_connect=ssh ansible_user=ansible  ansible_ssh_private_key_file=id_rsa
+db_and_web_server2 ansible_host=10.200.193.194 ansible_connect=ssh ansible_user=ansible  ansible_ssh_private_key_file=id_rsa
+
+db_and_web_server3 ansible_host=10.200.193.67  ansible_connect=ssh ansible_user=ansible  ansible_ssh_private_key_file=id_rsa

@@ -1,0 +1,89 @@
+---
+# Description
+- name: Create MySQL by Ansible
+  hosts: db_and_web_server3
+  gather_facts: true
+  become: true                  # Become root user
+  tasks:
+    - name: Install all required dependencies
+      ansible.builtin.apt: 
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - python3
+        - python-setuptools
+        - build-essential
+        - python3-mysqldb
+        - pip
+        - telnetd
+        - net-tools
+        - firewalld
+
+    - name: Permit traffit in default zone on port 3306/tcp
+      ansible.posix.firewalld:
+        port: 3306/tcp
+        permanent: true
+        zone: public
+        state: enabled
+
+    - name: Restart Firewall Service
+      ansible.builtin.service:
+        name: firewalld
+        state: restarted
+
+    - name: Install MySQL database
+      ansible.builtin.apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - mysql-server
+        - mysql-client
+
+    - name: Create database and database users
+      community.mysql.mysql_db:
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        name: employee_db
+        state: present
+
+    - name: Ensure MySQL is configured to bind to the specified address and port
+      community.general.ini_file:
+        dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+        section: mysqld
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"            
+        state: present
+      with_items:
+        - { option: bind-address, value: 0.0.0.0 }    # Allow all hosts to connect to this port, default is 127.0.0.1 (only allow local host to connect)
+        - { option: mysqlx-bind-address, value: 0.0.0.0 }
+
+    - name: Create database user
+      community.mysql.mysql_user:
+        login_unix_socket: /var/run/mysqld/mysqld.sock      # Allow login mysql db via socket
+        name: db_user
+        password: newr00t
+        priv: '*.*:ALL,GRANT'         #<database.*>
+        host: '%'                     # Allow all host to connect to mysql db
+        state: present
+
+    - name: Restart MySQL DB            # To apply all the configuration
+      ansible.builtin.service:
+        name: mysql
+        state: restarted
+
+    - name: Install and Congifure Web Server
+      ansible.builtin.pip:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - flask
+        - flask-mysql
+
+    - name: Copy source code
+      ansible.builtin.copy:
+        src: app.py
+        dest: /opt/app.py
+
+    # - name: Start Web Server
+    #   ansible.builtin.shell:
+    #     cmd: FLASK_APP=/opt/app.py nohup flask run --host=0.0.0.0   # nohup: To run command in the background
+...

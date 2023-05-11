@@ -1,0 +1,7 @@
+---
+- name: function test
+- tasks:
+  - name: VMware
+    vmw
+
+...

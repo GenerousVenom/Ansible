@@ -1,0 +1,15 @@
+---
+# Description
+- name: Create MySQL by Ansible
+  hosts: db_and_web_server1, db_and_web_server2
+  gather_facts: true
+  become: true                  # Become root user
+  # vars:
+  #   db_name: employee_db
+  #   db_user: db_user
+  #   db_password: P@ssw0rd
+  roles:
+    - python
+    - mysql_db
+    - flask_web
+...
